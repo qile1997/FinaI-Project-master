@@ -1,0 +1,66 @@
+﻿@model IEnumerable<Team2Project.Models.Courses>
+
+@{
+    ViewBag.Title = "Course Index";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<h2>Course Index</h2>
+
+<p>
+    @Html.ActionLink("Create New", "Create", "", new { @class = "w3-btn w3-white w3-border w3-border-red w3-round-large" })
+</p>
+
+@if (Model.Count() == 0)
+{
+    <div class="text-danger">
+        @{
+            <br />
+            <p class="alert alert-danger text-center">No Courses Available</p>
+        }
+    </div>
+
+}
+else
+{
+    <table class="table">
+        <tr>
+            <th>
+                @Html.DisplayName("Course Name")
+            </th>
+            <th>
+                @Html.DisplayName("Start Time")
+            </th>
+            <th>
+                @Html.DisplayName("End Time")
+            </th>
+            <th></th>
+        </tr>
+
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.CourseName)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.StartTime)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.EndTime)
+                </td>
+                <td>
+                    @Html.ActionLink("Edit", "EditCourseTime", new { id = item.CoursesID }) |
+                    @Html.ActionLink("Details", "CourseTimeDetail", new { id = item.CoursesID }) |
+                    @Html.ActionLink("Delete", "DeleteCourseTime", new { id = item.CoursesID })
+                </td>
+            </tr>
+        }
+
+    </table>
+}
+
+<p>
+    @Html.ActionLink("Back to Selection", "SelectProgramme", "Admin", new { @class = "btn btn-primary btn-sm w3-button w3-aqua w3-round-xlarge w3-border-red " })
+</p>
+

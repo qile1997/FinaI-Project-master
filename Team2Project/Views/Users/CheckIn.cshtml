@@ -1,0 +1,157 @@
+﻿@model Team2Project.Models.Courses
+
+@{
+    ViewBag.Title = "Check In";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    if (Session["Student"] == null)
+    {
+        Layout = null;
+        Response.Redirect("/Users/Login");
+    }
+}
+
+@if (Session["StudentProgramme"].ToString() == Team2Project.Models.Programme.DiplomaInIT.ToString())
+{
+    <h2>Programme : Diploma In IT </h2>
+}
+else if (Session["StudentProgramme"].ToString() == Team2Project.Models.Programme.DiplomaInSE.ToString())
+{
+    <h2>Programme : Diploma In SE </h2>
+}
+else if (Session["StudentProgramme"].ToString() == Team2Project.Models.Programme.DegreeInIT.ToString())
+{
+    <h2>Programme : Degree In IT </h2>
+}
+else if (Session["StudentProgramme"].ToString() == Team2Project.Models.Programme.DegreeInSE.ToString())
+{
+    <h2>Programme : Degree In SE </h2>
+}
+
+@using (Html.BeginForm())
+{
+
+    <div class="form-horizontal">
+        <hr />
+
+        <div class="form-group">
+            @Html.Label("Course Name", htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.DropDownList("Courses", null, "--Select Course--", htmlAttributes: new { @class = "form-control w3-btn w3-white w3-border w3-border-red w3-round-large w3-padding-small" })
+            </div>
+        </div>
+
+        <span id="LabelTotal" class="control-label"></span>
+        <span style="padding-top:7px" id="ListTotal"></span>
+        <div id="Timeform"></div>
+        <table class="table" id="TimeTable"></table>
+    </div>
+}
+
+<script language="javascript" type="text/javascript">
+
+    $("#Courses").change(function () {
+        var courseName = $("#Courses").find('option:selected').html();
+        $("#LabelTotal").html("");
+        $("#ListTotal").html("");
+        $.ajax({
+            type: "POST",
+            url: "/Users/CheckIn",
+            data: {
+                CourseName: courseName
+            },
+            success: function (response) {
+
+                if (response.course == false) {
+                    $("#TimeTable").html("");
+                    $("#Timeform").html("");
+                }
+                else if (response.time == false) {
+                    $("#TimeTable").html("");
+                    $("#Timeform").html("");
+                    $("#Timeform").append(`<p class="alert alert-danger text-center">${response.Error}</p>`);
+                }
+                else {
+                    $("#TimeTable").html("");
+                    $("#Timeform").html("");
+                    LabelText = `<b>Total Course Time : </b>`
+                    $("#LabelTotal").append(LabelText);
+
+                    LabelTotalStudent = `${response.TotalCourseTime}`
+                    $("#ListTotal").append(LabelTotalStudent);
+
+                    htmlHeader = `<tr>   <th>Start Time</th>   <th>End Time</th> <th>Check In Status</th> <th></th> </tr>`;
+                    $("#TimeTable").append(htmlHeader);
+                    if (response.checkedin == true) {
+
+                    }
+                    else {
+                        Object.keys(response.getTimetable).forEach(function (num) {
+                            htmlCourselist = `<tr>   <td>${response.getTimetable[num].StartTime.toString()}</td>   <td>${response.getTimetable[num].EndTime}</td>   <td class="Status" id="test${response.getTimetable[num].CourseTimetableId}">${response.getTimetable[num].Msg}</td> <td class="test${response.getTimetable[num].CourseTimetableId}"> <button onclick="Option('${response.getTimetable[num].CourseTimetableId}')">${response.getTimetable[num].CheckInButton}</button> </td> </tr>`;
+                            debugger
+                            $("#TimeTable").append(htmlCourselist);
+                        });
+                        CheckStatus();
+                    }
+                }
+            }
+        })
+        if (courseName == "--Select Course--") {
+            debugger
+            $("#TimeTable").html("");
+            $("#Timeform").html("");
+        }
+    })
+
+    const CheckStatus = () => {
+        var status = $(".Status").toArray();
+        debugger;
+        Object.keys(status).forEach(function (num) {
+
+            debugger;
+            var getstatus = status[num];
+            if (getstatus.innerText == "Checked In") {
+                GetSeatId = $("." + getstatus.id).children();
+                GetSeatId.hide();
+                debugger
+            }
+            else if (getstatus.innerText == "Course Not Started") {
+                GetSeatId = $("." + getstatus.id).children();
+                GetSeatId.hide();
+                debugger
+            }
+            else if (getstatus.innerText == "Failed Check In") {
+                GetSeatId = $("." + getstatus.id).children();
+                GetSeatId.hide();
+                debugger
+            }
+            else if (getstatus.innerText == "Check In") {
+                GetSeatId = $("." + getstatus.id).children();
+                GetSeatId.show();
+                debugger
+            }
+        })
+    }
+    CheckStatus();
+
+    function Option(TimeID) {
+        $.ajax({
+            type: "POST",
+            url: "/Users/TakeAttendance",
+            data: {
+                CourseTimeID: TimeID,
+            },
+            success: function (response) {
+                if (response.TdyDate == false) {
+                    debugger
+                    alert("Please follow by the start time to check in.")
+                }
+                else if (response.TdyDate == true) {
+                    CheckStatus();
+                }
+            }
+        })
+    }
+
+</script>
+

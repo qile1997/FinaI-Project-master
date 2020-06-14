@@ -1,0 +1,111 @@
+﻿@model Team2Project.Models.Courses
+
+@{
+    ViewBag.Title = "Check Attendance";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    if (Session["Student"] == null)
+    {
+        Layout = null;
+        Response.Redirect("/Users/Login");
+    }
+}
+
+@if (Session["StudentProgramme"].ToString() == Team2Project.Models.Programme.DiplomaInIT.ToString())
+{
+    <h2>Programme : Diploma In IT </h2>
+}
+else if (Session["StudentProgramme"].ToString() == Team2Project.Models.Programme.DiplomaInSE.ToString())
+{
+    <h2>Programme : Diploma In SE </h2>
+}
+else if (Session["StudentProgramme"].ToString() == Team2Project.Models.Programme.DegreeInIT.ToString())
+{
+    <h2>Programme : Degree In IT </h2>
+}
+else if (Session["StudentProgramme"].ToString() == Team2Project.Models.Programme.DegreeInSE.ToString())
+{
+    <h2>Programme : Degree In SE </h2>
+}
+
+@using (Html.BeginForm())
+{
+
+    <div class="form-horizontal">
+        <hr />
+
+        <div class="form-group">
+            @Html.Label("Course Name", htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.DropDownList("Courses", null, "--Select Course--", htmlAttributes: new { @class = "form-control" })
+            </div>
+
+
+        </div>
+        <span id="LabelTotal" class="control-label"></span>
+        <span style="padding-top:7px" id="ListTotal"></span>
+        <div id="Timeform"></div>
+        <table class="table" id="TimeTable"></table>
+    </div>
+}
+
+<script language="javascript" type="text/javascript">
+
+    $("#Courses").change(function () {
+        var courseName = $("#Courses").find('option:selected').html();
+        debugger
+        $.ajax({
+            type: "POST",
+            url: "/Users/CheckAttendance",
+            data: {
+                CourseName: courseName
+            },
+            success: function (response) {
+                if (response.course == false) {
+                    debugger
+                    $("#TimeTable").html("");
+                    $("#Timeform").html("");
+                    $("#LabelTotal").html("");
+                    $("#ListTotal").html("");
+                }
+                else if (response.time == false) {
+                    debugger
+                    $("#TimeTable").html("");
+                    $("#Timeform").html("");
+                    $("#LabelTotal").html("");
+                    $("#ListTotal").html("");
+                    $("#Timeform").append(`<p class="alert alert-danger text-center">${response.Error}</p>`);
+                }
+                else {
+                    debugger
+                    $("#TimeTable").html("");
+                    $("#Timeform").html("");
+                    $("#LabelTotal").html("");
+                    $("#ListTotal").html("");
+                    LabelTotalHtml = `<b> Total Checked In : </b>`;
+                    $("#LabelTotal").append(LabelTotalHtml);
+
+                    ListTotalInt = `${response.TotalCheckedIn} / ${response.TotalCourseTime}`;
+                    $("#ListTotal").append(ListTotalInt);
+
+                    htmlHeader = `<tr>   <th>Start Time</th>   <th>End Time</th> <th>Check In Status</th> <th>Checked In Time</th> <th></th></tr>`;
+                    $("#TimeTable").append(htmlHeader);
+
+                    Object.keys(response.getTimetable).forEach(function (num) {
+                        debugger
+                        htmlCourselist = `<tr>   <td>${response.getTimetable[num].StartTime.toString()}</td>   <td>${response.getTimetable[num].EndTime}</td>   <td>${response.getTimetable[num].CheckInButton}</td>  <td>${response.getTimetable[num].AttendanceTime}</td></tr>`;
+                        $("#TimeTable").append(htmlCourselist);
+                    });
+                }
+            }
+        })
+        if (courseName == "--Select Course--") {
+            $("#TimeTable").html("");
+            $("#Timeform").html("");
+            $("#LabelTotal").html("");
+            $("#ListTotal").html("");
+        }
+    })
+
+</script>
+

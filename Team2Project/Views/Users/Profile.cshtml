@@ -1,0 +1,73 @@
+﻿@model Team2Project.Models.Users
+
+@{
+    ViewBag.Title = "Profile";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    if (Session["Student"] == null)
+    {
+        Layout = null;
+        Response.Redirect("/Users/Login");
+    }
+}
+
+<h2>Profile</h2>
+
+<div>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.Username)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Username)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Email)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Email)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Programme)
+        </dt>
+
+        @if (Model.Programme == Team2Project.Models.Programme.DiplomaInIT)
+        {
+            <dd>
+                @Html.DisplayName("Diploma In IT")
+            </dd>
+        }
+        else if (Model.Programme == Team2Project.Models.Programme.DiplomaInSE)
+        {
+            <dd>
+                @Html.DisplayName("Diploma In SE")
+            </dd>
+        }
+        else if (Model.Programme == Team2Project.Models.Programme.DegreeInIT)
+        {
+            <dd>
+                @Html.DisplayName("Degree In IT")
+            </dd>
+        }
+        else if (Model.Programme == Team2Project.Models.Programme.DegreeInSE)
+        {
+            <dd>
+                @Html.DisplayName("Degree In SE")
+            </dd>
+        }
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Roles)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Roles)
+        </dd>
+
+    </dl>
+</div>

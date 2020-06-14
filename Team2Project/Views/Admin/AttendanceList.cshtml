@@ -1,0 +1,252 @@
+﻿@model Team2Project.ViewModel.SelectProgrammeVM
+
+@{
+    ViewBag.Title = "Attendance List";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<hr />
+
+<div class="form-horizontal">
+    <label style="margin-right:20px">Please Select Option</label>
+    <input class="Option" id="Course" type="button" value="Single Course" />
+    <input class="Option" id="Student" type="button" value="Single Student" />
+    @* Added New here *@
+    <input class="Option" id="Cancel" type="button" value="Cancel" hidden />
+
+
+    <div class="form-group">
+        @Html.LabelFor(model => model.Programmes, htmlAttributes: new { @class = "control-label col-md-2" })
+        <div class="col-md-10">
+            @Html.EnumDropDownListFor(model => model.Programmes, htmlAttributes: new { @class = "form-control w3-btn w3-white w3-border w3-border-red w3-round-large w3-padding-small" })
+            @Html.ValidationMessageFor(model => model.Programmes, "", new { @class = "text-danger" })
+        </div>
+    </div>
+
+    <div id="CourseList"></div>
+    <br />
+    <span id="LabelTotal" class="control-label"></span>
+    <span style="padding-top:7px" id="ListTotal"></span>
+    <table id="ShowData" class="table"></table>
+    <div id="Notice"></div>
+</div>
+
+
+<script>
+
+
+    $("#Programmes").change(function () {
+        $("#ShowData").html("");
+        ClearText();
+        localStorage.removeItem('ID');
+        var selectedProgrammes = $("#Programmes").val().toString();
+        printCourse(selectedProgrammes);
+    })
+
+    function ClearText() {
+        $("#LabelTotal").html("");
+        $("#ListTotal").html("");
+    }
+
+    const printCourse = (Programmes) => {
+        debugger;
+        $.ajax({
+            type: "Post",
+            url: "/Admin/SelectProgramme",
+            data: {
+                selectedProgramme: Programmes
+            },
+            success: function (response) {
+                $("#CourseList").html("");
+                $("#Notice").html("");
+                if (response.data) {
+                    Object.keys(response.AllCourseName).forEach(function (num) {
+                        htmlCourselist = `<button style="margin-right:20px" id="Get${response.AllCourseName[num].CoursesID}" onclick="SelectCourse('${response.AllCourseName[num].CoursesID}')">${response.AllCourseName[num].CourseName}</button>`
+                        $("#CourseList").append(htmlCourselist);
+
+                    });
+                }
+            }
+
+        })
+    }
+    printCourse($("#Programmes").val().toString());
+
+    function SelectCourse(GetID) {
+        debugger
+        var id = localStorage.getItem('ID');
+        $("#Get" + id).css({ "background-color": "" });
+        localStorage.removeItem('ID');
+        ClearText();
+
+
+        var selectedProgrammes = $("#Programmes").val().toString();
+        $("#Get" + GetID).css({ "background-color": "beige" });
+        localStorage.setItem('ID', GetID);
+        var OptionClicked = localStorage.getItem('Option');
+        if (OptionClicked == null) {
+            $("#Notice").html("");
+            $("#Notice").html(`<p class="alert alert-danger text-center">Please select single course or single student</p>`);
+        }
+        else {
+            DataList(OptionClicked, selectedProgrammes, GetID);
+        }
+    }
+
+    function SelectedData(getID) {
+        debugger
+        $("#ShowData").html('');
+        var selectedProgrammes = $("#Programmes").val().toString();
+        var OptionClicked = localStorage.getItem('Option');
+        var id = localStorage.getItem('ID');
+        ClearText();
+
+        $.ajax({
+            type: "Post",
+            url: "/Admin/CheckAllStudentAttendance",
+            data: {
+                Dataid: getID,
+                GetSelectedProgramme: selectedProgrammes,
+                SelectedOption: OptionClicked,
+                GetSelectedCourse: id
+
+            },
+            success: function (response) {
+                if (response.notime == true) {
+                    debugger
+                    $("#Notice").html("");
+                    ClearText();
+                    $("#Notice").append(`<p class="alert alert-danger text-center">${response.Error}</p>`);
+                }
+                else if (OptionClicked == "Course") {
+                    debugger
+                    LabelTotalHtml = ` <b>Total Student Checked In </b>: `;
+                    $("#LabelTotal").append(LabelTotalHtml);
+
+                    ListTotalInt = `${response.TotalCheckedIn} / ${response.TotalStudent}`;
+                    $("#ListTotal").append(ListTotalInt);
+
+                    htmlDatalist = `<tr><th> Student Name</th>  <th>Status</th> <th>Checked In Time</th> </tr>`
+                    $("#ShowData").append(htmlDatalist);
+
+                    Object.keys(response.getStudentAttendance).forEach(function (num) {
+                        htmlDatalist = `<tr>   <td>${response.getStudentAttendance[num].StudentName}</td>  <td>${response.getStudentAttendance[num].CheckInButton}</td> <td>${response.getStudentAttendance[num].AttendanceTime}</td> <td></td> </tr>`
+                        $("#ShowData").append(htmlDatalist);
+                    });
+                }
+                else if (OptionClicked == "Student") {
+                    LabelTotalHtml = ` <b> Total Checked In : </b>`;
+                    $("#LabelTotal").append(LabelTotalHtml);
+
+                    ListTotalInt = `${response.TotalCheckedIn} / ${response.TotalCourseTime}`;
+                    $("#ListTotal").append(ListTotalInt);
+
+                    htmlDatalist = `<tr><th> Start Time</th>  <th>End Time</th> <th>Status</th> <th>Checked In Time</th> </tr>`
+                    $("#ShowData").append(htmlDatalist);
+                    Object.keys(response.getStudentAttendance).forEach(function (num) {
+                        htmlDatalist = `<tr>   <td>${response.getStudentAttendance[num].StartTime}</td>  <td>${response.getStudentAttendance[num].EndTime}</td> <td>${response.getStudentAttendance[num].CheckInButton}</td> <td>${response.getStudentAttendance[num].AttendanceTime}</td> <td></td> </tr>`
+                        $("#ShowData").append(htmlDatalist);
+                    });
+                }
+            }
+        })
+    }
+
+    $(".Option").click(function (text) {
+        debugger
+        var Option = text.target.value;
+        localStorage.removeItem('Option');
+        $("#Student").css({ "background-color": "" });
+        $("#Course").css({ "background-color": "" });
+        $("#Cancel").show();
+        $("#Notice").html("");
+        ClearText();
+
+        var selectedProgrammes = $("#Programmes").val().toString();
+        var GetID = localStorage.getItem('ID');
+        if (Option == "Single Course") {
+            localStorage.setItem('Option', "Course");
+            $("#Course").css({ "background-color": "beige" });
+            if (GetID != null) {
+                DataList("Course", selectedProgrammes, GetID);
+            }
+        }
+        if (Option == "Single Student") {
+            localStorage.setItem('Option', "Student");
+            $("#Student").css({ "background-color": "beige" });
+            if (GetID != null) {
+                DataList("Student", selectedProgrammes, GetID);
+            }
+        }
+        // New
+        if (Option == "Cancel") {
+            localStorage.removeItem('ID');
+            $("#Course").css({ "background-color": "" });
+            $("#Student").css({ "background-color": "" });
+            $("#Get" + GetID).css({ "background-color": "" });
+            $("#ShowData").html('');
+            $("#Notice").html("");
+            $("#Cancel").hide();
+        }
+    })
+
+    const DataList = (getOption, selectedProgrammes, CourseId) => {
+        debugger;
+        $("#ShowData").html('');
+
+        $.ajax({
+            type: "Post",
+            url: "/Admin/CourseIndex",
+            data: {
+                SelectedOption: getOption,
+                CourseId: CourseId,
+                selectedProgramme: selectedProgrammes,
+                StudentName: ''
+            },
+            success: function (response) {
+                debugger
+
+                if (response.getData == null) {
+                    $("#Notice").html("");
+                    $("#Notice").html(`<p class="alert alert-danger text-center">${response.Error}</p>`);
+                }
+                else {
+                    $("#Notice").html("");
+                    if (getOption == "Course") {
+                        LabelText = `<b>Total Course Time : </b>`
+                        $("#LabelTotal").append(LabelText);
+
+                        LabelTotalStudent = `${response.TotalCourseTime}`
+                        $("#ListTotal").append(LabelTotalStudent);
+
+                        htmlDatalist = `<tr> <th>Start Time</th>  <th>End Time</th>  <th></th> </tr>`
+                        $("#ShowData").append(htmlDatalist);
+                        Object.keys(response.getData).forEach(function (num) {
+                            htmlDatalist = `<tr>   <td>${response.getData[num].StartTime}</td>  <td>${response.getData[num].EndTime}</td>  <td><button onclick="SelectedData(${response.getData[num].CourseTimetableId})">Select</button></td></tr>`
+                            $("#ShowData").append(htmlDatalist);
+                        });
+                    }
+                    if (getOption == "Student") {
+                        LabelText = `<b>Total Student : </b>`
+                        $("#LabelTotal").append(LabelText);
+
+                        LabelTotalStudent = `${response.TotalStudent}`
+                        $("#ListTotal").append(LabelTotalStudent);
+
+                        htmlDatalist = `<tr><th> Student Name</th>  <th></th></tr>`
+                        $("#ShowData").append(htmlDatalist);
+                        Object.keys(response.getData).forEach(function (num) {
+                            htmlDatalist = `<tr><td>${response.getData[num].StudentName}</td>  <td><button onclick="SelectedData(${response.getData[num].StudentID})">Select</button></td></tr>`
+                            $("#ShowData").append(htmlDatalist);
+                        });
+                    }
+                }
+            }
+        })
+    }
+
+    window.onload = function () {
+        localStorage.removeItem('Option');
+        localStorage.removeItem('ID');
+    };
+</script>

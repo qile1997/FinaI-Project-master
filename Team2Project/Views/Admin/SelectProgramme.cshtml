@@ -1,0 +1,283 @@
+﻿@model Team2Project.ViewModel.SelectProgrammeVM
+
+@{
+    ViewBag.Title = "Select Programme";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+
+<div class="form-horizontal">
+    <div class="form-group">
+      <hr />
+        @Html.LabelFor(model => model.Programmes, htmlAttributes: new { @class = "control-label col-md-2" })
+        <div class="col-md-10">
+            @Html.EnumDropDownListFor(model => model.Programmes, htmlAttributes: new { @class = "form-control w3-btn w3-white w3-border w3-border-red w3-round-large w3-padding-small" })
+            @Html.ValidationMessageFor(model => model.Programmes, "", new { @class = "text-danger" })
+        </div>
+    </div>
+    <div id="Notice"></div>
+    <p id="list"></p>
+    <div id="Timeform"></div>
+    <div id="ErrorMsg"></div>
+    <table class="table" id="TimeTable"></table>
+
+</div>
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+
+<script>
+
+    //select Programme
+    $("#Programmes").change(function () {
+        var selectedProgrammes = $("#Programmes").val().toString();
+        Crud('Cancel');
+        //localStorage.removeItem('CRUD');
+        //$("#Notice").html('');
+        //$("#CRUD").html('');
+        //$("#Delete").css({ "background-color": "" });
+        //$("#Edit").css({ "background-color": "" });
+        //$("#Create").css({ "background-color": "" });
+        //$("#Courseform").html('');
+        printCourse(selectedProgrammes);
+    })
+    const printCourse = (Programmes) => {
+        debugger;
+        $.ajax({
+            type: "Post",
+            url: "/Admin/SelectProgramme",
+            data: {
+                selectedProgramme: Programmes
+            },
+            success: function (response) {
+                $("#list").html("");
+                $("#TimeTable").html("");
+                $("#Timeform").html("");
+                htmlHeader = `<p ><button id="Create" onclick="Crud('CreateCourse')">Create Course</button> <button id="Edit" onclick="Crud('EditCourse')">Edit Course</button> <button id="Delete" onclick="Crud('DeleteCourse')">Delete Course</button> <span id="CRUD"></span> </p> <div class="form-horizontal" id="Courseform" style = "margin-bottom:20px"></div>`;
+                $("#list").append(htmlHeader);
+                if (response.data) {
+                    Object.keys(response.AllCourseName).forEach(function (num) {
+                        htmlCourselist = `<button style="margin-right:20px" onclick="SelectCourse('${response.AllCourseName[num].CoursesID}')">${response.AllCourseName[num].CourseName}</button>`
+                        $("#list").append(htmlCourselist);
+
+                    });
+                }
+            }
+
+        })
+    }
+    printCourse($("#Programmes").val().toString());
+
+
+
+
+
+
+    //select Courses
+    function SelectCourse(Course) {
+        debugger
+        var selectedProgrammes = $("#Programmes").val().toString();
+        var Crud = localStorage.getItem('CRUD');
+        if (Crud == "EditCourse") {
+            localStorage.removeItem('CRUD');
+            location.href = `/Admin/EditCourse/${Course}`
+        }
+        else if (Crud == "DeleteCourse") {
+            localStorage.removeItem('CRUD');
+            location.href = `/Admin/DeleteCourse/${Course}`
+        }
+        else {
+            localStorage.removeItem('Course');
+            $("#Timeform").html("");
+            $("#TimeTable").html("");
+            localStorage.setItem('Course', Course);
+            PrintCourseTime(selectedProgrammes, Course);
+        }
+
+    }
+    const PrintCourseTime = (selectedProgrammes, CourseId) => {
+        debugger;
+        htmlcreateBtn = `<button id="Time" onclick="Crud('CreateTime')">Create Time</button>`;
+        $("#Timeform").append(htmlcreateBtn);
+        $.ajax({
+            type: "Post",
+            url: "/Admin/CourseIndex",
+            data: {
+                SelectedOption: "Course",
+                CourseId: CourseId,
+                selectedProgramme: selectedProgrammes,
+                StudentName: ''
+            },
+            success: function (response) {
+                if (response.time == false) {
+                    $("#Timeform").append(`<p class="alert alert-danger text-center">${response.Error}</p>`);
+                }
+                else {
+                    htmlHeader = `<tr>   <th>Start Time</th>   <th>End Time</th>   <th></th> </tr>`;
+                    $("#TimeTable").append(htmlHeader);
+                    Object.keys(response.getData).forEach(function (num) {
+                        debugger
+                        htmlCourselist = `<tr>    <td>${response.getData[num].StartTime.toString()}</td>   <td>${response.getData[num].EndTime}</td>   <td> <button id="Option" value=${response.getData[num].CourseTimetableId} onclick="Option('Edit')">Edit</button>  <button id="Option" value=${response.getData[num].CourseTimetableId} onclick="Option('Details')">Details</button>  <button id="Option" value=${response.getData[num].CourseTimetableId} onclick="Option('Delete')">Delete</button> </td> </tr>`;
+                        debugger;
+                        $("#TimeTable").append(htmlCourselist);
+
+                    });
+
+                }
+            }
+        })
+    }
+    //select Course time option
+    function Option(option) {
+        var TimeId = $("#Option").val();
+        if (option == "Edit") {
+            location.href = `/Admin/EditCourseTime/${TimeId}`
+        }
+        else if (option == "Details") {
+            location.href = `/Admin/CourseTimeDetail/${TimeId}`
+        }
+        else if (option == "Delete") {
+            location.href = `/Admin/DeleteCourseTime/${TimeId}`
+        }
+    }
+
+    //create form
+    const Crud = (option) => {
+        debugger
+        if (option == "CreateTime") {
+
+            //$("#Timeform").html('');
+            //$("#Edit").css({ "background-color": "" });
+            //$("#Create").css({ "background-color": "" });
+            //$("#Delete").css({ "background-color": "" });
+            //$("#Courseform").html('');
+            Crud('Cancel');
+            htmlCreateTime = `<p><label>Course Start Time</label> <input id="Start" class = "form-control w3-btn w3-white w3-border w3-border-red w3-round-large w3-padding-small", type = "datetime-local", required = "required" /></p><p><label style>Course End Time </label> <input id="End" class = "form-control w3-btn w3-white w3-border w3-border-red w3-round-large w3-padding-small", type = "datetime-local", required = "required" /></p><input onclick="Submit('Time')" id="SubmitCourseTime" type="button" value="Submit" Style="margin-left : 10px" /> <input onclick="Crud('Cancel')" type="button" value="Cancel" />`
+            $("#Timeform").append(htmlCreateTime);
+        }
+        else if (option == "CreateCourse") {
+            Crud('Cancel');
+            //localStorage.removeItem('CRUD');
+            //$("#Notice").html("");
+            //$("#Edit").css({ "background-color": "" });
+            //$("#Delete").css({ "background-color": "" });
+            //$("#Time").css({ "background-color": "" });
+            //$("#Courseform").html('');
+            //$("#Timeform").html("");
+            //$("#TimeTable").html("");
+            //$("#CRUD").html('');
+            //localStorage.removeItem('CRUD');
+            htmlCreateCourse = `<label>Course Name</label> <input id="CourseName" type="text" class = "form-control w3-btn w3-white w3-border w3-border-red w3-round-large w3-padding-small", required = "required"/><input onclick="Submit('Course')" type="button" value="Submit" Style="margin-left : 10px" />`
+            $("#Courseform").append(htmlCreateCourse);
+            $("#CRUD").append(`<button onclick="Crud('Cancel')">Cancel</button>`);
+            $("#Create").css({ "background-color": "beige" });
+            localStorage.removeItem('Course');
+
+        }
+        else if (option == "EditCourse") {
+            Crud('Cancel');
+            //$("#Notice").html("");
+            //localStorage.removeItem('CRUD');
+            //$("#CRUD").html('');
+            //$("#Courseform").html('');
+            //$("#Delete").css({ "background-color": "" });
+            //$("#Create").css({ "background-color": "" });
+            //$("#Time").css({ "background-color": "" });
+            htmlNotice = `<p> Please select one course to edit </p>`;
+            $("#CRUD").append(`<button onclick="Crud('Cancel')">Cancel</button>`);
+            $("#Notice").append(htmlNotice);
+            $("#Edit").css({ "background-color": "beige" });
+            localStorage.setItem('CRUD', option);
+        }
+        else if (option == "DeleteCourse") {
+            Crud('Cancel');
+            //localStorage.removeItem('CRUD');
+            //$("#Notice").html("");
+            //$("#CRUD").html('');
+            //$("#Courseform").html('');
+            //$("#Edit").css({ "background-color": "" });
+            //$("#Create").css({ "background-color": "" });
+            //$("#Time").css({ "background-color": "" });
+            htmlNotice = `<p> Please select one course to delete </p>`;
+            $("#Notice").append(htmlNotice);
+            $("#CRUD").append(`<button onclick="Crud('Cancel')">Cancel</button>`);
+            $("#Delete").css({ "background-color": "beige" });
+            localStorage.setItem('CRUD', option);
+
+        }
+        else if (option == "Cancel") {
+            localStorage.removeItem('CRUD');
+            $("#Notice").html('');
+            $("#CRUD").html('');
+            $("#Delete").css({ "background-color": "" });
+            $("#Edit").css({ "background-color": "" });
+            $("#Create").css({ "background-color": "" });
+            $("#Courseform").html('');
+            $("#Timeform").html('');
+            $("#ErrorMsg").html('');
+        }
+
+    }
+
+    function Submit(option) {
+        debugger
+        //const CreateCourseOrTime = (Programmes, option) => {
+        var Course = localStorage.getItem('Course');
+        if (Course == null) {
+            Course = '';
+        }
+        var StartTime = $("#Start").val();
+        var EndTime = $("#End").val();
+        var getCourseName = $("#CourseName").val();
+        var selectedProgrammes = $("#Programmes").val().toString();
+        if(getCourseName== null){
+           getCourseName = "";
+        }
+        if (StartTime == "" || EndTime == ""){
+            $("#ErrorMsg").append(`<p class="alert alert-danger text-center">Please Select A Time</p>`);
+        }
+    else {
+    $("#ErrorMsg").html("");
+            $.ajax({
+            type: "Post",
+            url: "/Admin/CreateCourse",
+            data: {
+                selectedProgramme: selectedProgrammes,
+                CreateOption: option,
+                SelectedCourseId: Course,
+                CourseName: getCourseName,
+                StartTime: StartTime,
+                EndTime: EndTime
+            },
+            success: function (response) {
+                debugger;
+                if (option == "Course") {
+                    if (response.SaveCourse) {
+                        printCourse(selectedProgrammes);
+                    }
+                    else {
+                        $("#ErrorMsg").append(`<p class="alert alert-danger text-center">${response.Error}</p>`);
+                    }
+                }
+                else if (option == "Time") {
+                    if (response.Savetime) {
+                        PrintCourseTime(selectedProgrammes, Course);
+                        $("#Timeform").html("");
+                        $("#TimeTable").html("");
+                        localStorage.removeItem('Course');
+                    }
+                    else {
+                        $("#ErrorMsg").html(`<p class="alert alert-danger text-center">${response.Error}</p>`);
+                    }
+                }
+            }
+
+        })
+    }
+
+        //}
+
+    }
+
+</script>

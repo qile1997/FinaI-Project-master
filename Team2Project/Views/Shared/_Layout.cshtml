@@ -1,0 +1,62 @@
+﻿<!DOCTYPE html>
+<style>
+    li:hover {
+        color: indianred !important
+    }
+
+    a:hover {
+        color: indianred !important
+    }
+
+    a {
+        color: indianred !important;
+        font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif
+    }
+</style>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title - Eduvo Academy</title>
+    @Styles.Render("~/Content/css")
+    @Scripts.Render("~/bundles/modernizr")
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+
+</head>
+<body>
+    <div class="navbar navbar-inverse navbar-fixed-top" style="background-color:white;box-shadow: 0 1px 1px 0 rgba(0,0,0,0.2), 0 1px 10px 0 rgba(0,0,0,0.19);border-color:transparent">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                @*@Html.ActionLink("Eduvo Academy", "HomePage", "Users", new { area = "" }, new { @class = "navbar-brand" })*@
+                <img src="~/Images/eduvopic.png" style="padding:5px;height:50px" />
+            </div>
+            <div class="navbar-collapse collapse">
+                <ul class="nav navbar-nav">
+                    <li>@Html.ActionLink("Check In", "CheckIn", "Users")</li>
+                    <li>@Html.ActionLink("Check Attendance", "CheckAttendance", "Users")</li>
+                    <li>@Html.ActionLink("My Profile", "Profile", "Users")</li>
+                    <li>@Html.ActionLink("Logout", "Logout", "Users")</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="container body-content">
+        @RenderBody()
+        <hr />
+        <footer>
+            <p>&copy; @DateTime.Now.Year - Eduvo Academy</p>
+        </footer>
+    </div>
+
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/bootstrap")
+    @RenderSection("scripts", required: false)
+</body>
+</html>

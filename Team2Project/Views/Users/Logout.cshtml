@@ -1,0 +1,18 @@
+﻿
+@{
+    ViewBag.Title = "Logout";
+    Layout = "~/Views/Shared/_HomePage.cshtml";
+
+    if (Session["Student"] == null)
+    {
+        Layout = null;
+        Response.Redirect("/Users/Login");
+    }
+}
+
+@{
+    Session.Abandon();
+    Response.Redirect("/Users/Login");
+}
+
+

@@ -1,0 +1,26 @@
+﻿Student
+{
+register
+login
+Get Attendance
+Profile
+list own Attendance
+}
+
+Admin
+{
+	create course , set course time, check student attendance , Profile
+}
+
+
+
+
+
+
+
+
+
+
+
+
+

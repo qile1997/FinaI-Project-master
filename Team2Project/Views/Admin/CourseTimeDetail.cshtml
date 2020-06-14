@@ -1,0 +1,72 @@
+﻿@model Team2Project.ViewModel.TimetableVM
+
+@{
+    ViewBag.Title = "Course Time Detail";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+    <h2>Course Time Detail</h2>
+
+<div>
+    <hr />
+    <dl class="dl-horizontal">
+
+        <dt>
+            @Html.DisplayNameFor(model => model.CourseName)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.CourseName)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Programme)
+        </dt>
+
+        @if (Model.Programme == Team2Project.Models.Programme.DiplomaInIT)
+        {
+            <dd>
+                @Html.DisplayName("Diploma In IT")
+            </dd>
+        }
+        else if (Model.Programme == Team2Project.Models.Programme.DiplomaInSE)
+        {
+            <dd>
+                @Html.DisplayName("Diploma In SE")
+            </dd>
+        }
+        else if (Model.Programme == Team2Project.Models.Programme.DegreeInIT)
+        {
+            <dd>
+                @Html.DisplayName("Degree In IT")
+            </dd>
+        }
+        else if (Model.Programme == Team2Project.Models.Programme.DegreeInSE)
+        {
+            <dd>
+                @Html.DisplayName("Degree In SE")
+            </dd>
+        }
+
+        <dt>
+            @Html.DisplayNameFor(model => model.StartTime)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.StartTime)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.EndTime)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.EndTime)
+        </dd>
+
+    </dl>
+</div>
+<p>
+    @Html.ActionLink("Edit", "EditCourseTime", new {  id = Model.CourseTimetableId}) |
+    @Html.ActionLink("Back to List", "SelectProgramme")
+</p>
